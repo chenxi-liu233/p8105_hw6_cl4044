@@ -138,21 +138,51 @@ baby_df =
       
 ```
 
-fit a model
-
+Stepwise regression model
 ```{r}
 full_model = lm(bwt ~ ., data = baby_df) 
 step_model <- MASS::stepAIC(full_model, direction = "both", 
                       trace = FALSE)
-summary(step_model)
+step_model %>% 
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
 ```
+
+
+Plot predicton values vs. residuals
 
 ```{r}
 baby_df %>% 
   modelr::add_residuals(step_model) %>% 
-  ggplot(aes(x = gaweeks, y = resid)) + 
-  geom_point()
+  modelr::add_predictions(step_model) %>%
+  ggplot(aes(x = pred, y = resid)) + 
+  geom_point(alpha = 0.3) +
+  labs(
+    title = "Predicton vs. Residual",
+    x = "Predicton",
+    y = "Residual"
+  )
 ```
+
+According to the plot above, most of the points are clustered around zero. There are some large residual points when prediction value is under 1000. 
+
+Model 2: One using length at birth and gestational age as predictors (main effects only)
+```{r}
+model_2 = lm(bwt ~ blength + gaweeks, data = baby_df) %>%
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
+model_2
+  
+```
+
+Model 3: One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+```{r}
+model_3 = lm(bwt ~ bhead * blength * babysex, data = baby_df) %>%
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
+model_3
+```
+
 
 
 ## Problem 3
