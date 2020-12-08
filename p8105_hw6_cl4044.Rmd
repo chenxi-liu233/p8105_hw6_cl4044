@@ -291,26 +291,37 @@ The distribution of r^2 is approximately normal with the mean 0.911 and the  sta
 
 Plot the distribution graph of log(beta0 hat * beta1 hat).
 ```{r}
-bootstrap_results %>% 
+bootstrap_results_log =
+  bootstrap_results %>% 
   mutate(term = recode(term, '(Intercept)' = 'intercept')) %>%
   pivot_wider(names_from = term, values_from = estimate) %>%
-  mutate(log_beta = log(intercept*tmin)) %>%
-  ggplot(aes(x = r.squared)) +
+  mutate(log_coef_intereaction = log(intercept*tmin))
+
+bootstrap_results_log %>%
+  ggplot(aes(x = log_coef_intereaction)) +
   geom_density() +
   labs(
     title = "Distribution of log(beta0 hat * beta1 hat)",
     x = "log(beta0 hat * beta1 hat)",
     y = "Density"
   )
-bootstrap_results %>% 
-  mutate(term = recode(term, '(Intercept)' = 'intercept')) %>%
-  pivot_wider(names_from = term, values_from = estimate) %>%
-  mutate(log_beta = log(intercept*tmin)) %>%
-  summarize(inter_mean = mean(log_beta),
-            inter_se = sd(log_beta)) %>%
+bootstrap_results_log %>%
+  summarize(intersection_mean = mean(log_coef_intereaction),
+            intersection_se = sd(log_coef_intereaction)) %>%
   knitr::kable(digits = 3)
   
 ```
 The distribution of log(beta0 hat * beta1 hat). is approximately normal, with the mean 2.013 and the standard error of 0.024. 
 
-Using the 5000 bootstrap estimates, identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(beta0 hat * beta1 hat).
+Using the 5000 bootstrap estimates, identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(beta0 hat * beta1 hat):
+```{r}
+tibble(
+  quantile = c("2.5 %", "97.5 %"),
+  'r.squared' = quantile(bootstrap_results_log$r.squared, c(0.025,0.975)),
+  'log.muti.beta' = quantile(bootstrap_results_log$log_coef_intereaction, c(0.025,0.975))
+) %>%
+   knitr::kable(digits = 3)
+```
+The 95% confidence interval for r^2 is `r  quantile(bootstrap_results_log$r.squared, c(0.025,0.975))`.
+
+The 95% confidence interval for log(beta0 hat * beta1 hat) is (0.8530, 0.8945).
