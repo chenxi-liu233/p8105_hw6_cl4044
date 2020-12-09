@@ -333,8 +333,8 @@ Using the 5000 bootstrap estimates, identify the 2.5% and 97.5% quantiles to pro
 ```{r}
 tibble(
   quantile = c("2.5 %", "97.5 %"),
-  'r.squared' = quantile(bootstrap_results_log$r.squared, c(0.025,0.975)),
-  'log.muti.beta' = quantile(bootstrap_results_log$log_coef_intereaction, c(0.025,0.975))
+  'r_squared' = quantile(bootstrap_results_log$r.squared, c(0.025,0.975)),
+  'log_coef_intereaction' = quantile(bootstrap_results_log$log_coef_intereaction, c(0.025,0.975))
 ) %>%
    knitr::kable(digits = 3)
 ```
