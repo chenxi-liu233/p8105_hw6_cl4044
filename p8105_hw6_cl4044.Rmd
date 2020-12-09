@@ -107,6 +107,7 @@ models_results_df %>%
 ## Problem 2
 
 Import and tidy the dataset 
+
 ```{r}
 baby_df = 
   read_csv("./data/birthweight.csv") %>%
@@ -139,6 +140,7 @@ baby_df =
 ```
 
 Stepwise regression model
+
 ```{r}
 full_model = lm(bwt ~ ., data = baby_df) 
 step_model <- MASS::stepAIC(full_model, direction = "both", 
@@ -149,7 +151,7 @@ step_model %>%
 ```
 
 
-Plot predicton values vs. residuals
+Plot prediction values vs. residuals
 
 ```{r}
 baby_df %>% 
@@ -164,9 +166,10 @@ baby_df %>%
   )
 ```
 
-According to the plot above, most of the points are clustered around zero. There are some large residual points when prediction value is under 1000. 
+According to the plot above, most of the points are clustered around zero. There are some large residual points when the prediction value is under 1000. 
 
 Model 2: One using length at birth and gestational age as predictors (main effects only)
+
 ```{r}
 model_2 = lm(bwt ~ blength + gaweeks, data = baby_df)
 
@@ -176,7 +179,8 @@ model_2 %>%
   
 ```
 
-Model 3: One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+Model 3: One using head circumference, length, sex, and all interactions (including the three-way interaction) between these.
+
 ```{r}
 model_3 = lm(bwt ~ bhead * blength * babysex, data = baby_df) 
 model_3 %>%
@@ -193,7 +197,8 @@ baby_df %>%
   geom_line(aes(y = pred), color = "red") + 
   facet_grid(~model)
 ```
-It’s not clear which is best. 
+
+It’s not clear, which is best. 
 
 Compare three models in terms of the cross-validated prediction error.
 
@@ -236,9 +241,12 @@ cv_res %>%
   )
 ```
 
+According to the graph above, my model has the lowest RMSE and, therefore, could potentially be the best out of three. 
+
 ## Problem 3
 
 Load the dataset 
+
 ```{r}
 weather_df = 
   rnoaa::meteo_pull_monitors(
@@ -254,10 +262,12 @@ weather_df =
 ```
 
 Bootstrap 5000 times
+
 ```{r}
+set.seed(123)
 bootstrap_results =
   weather_df %>% 
-  modelr::bootstrap(n = 50) %>% 
+  modelr::bootstrap(n = 5000) %>% 
   mutate(
     models = map(strap, ~lm(tmax ~ tmin, data = .x) ),
     results_glance = map(models, broom::glance),
@@ -274,9 +284,11 @@ bootstrap_results %>%
             r_squared_sd = sd(r.squared)) %>% 
   knitr::kable(digits = 3)
 ```
-The table above showed the mean of estimate, the standard deviation of estimate and mean of rsquared after bootstrap 5000 times. 
 
-Plot the distribution graph of r^2 
+The table above showed the mean of the estimate, the standard deviation of the estimate, and the mean of rsquared after bootstrap 5000 times. 
+
+Plot the distribution graph of r^2.
+
 ```{r}
 bootstrap_results %>% 
   ggplot(aes(x = r.squared)) +
@@ -287,9 +299,11 @@ bootstrap_results %>%
     y = "Density"
   )
 ```
-The distribution of r^2 is approximately normal with the mean 0.911 and the  standard error of 0.009. 
+
+The distribution of r^2 is approximately normal, with the mean 0.912 and the standard error of 0.008. 
 
 Plot the distribution graph of log(beta0 hat * beta1 hat).
+
 ```{r}
 bootstrap_results_log =
   bootstrap_results %>% 
@@ -311,9 +325,11 @@ bootstrap_results_log %>%
   knitr::kable(digits = 3)
   
 ```
-The distribution of log(beta0 hat * beta1 hat). is approximately normal, with the mean 2.013 and the standard error of 0.024. 
+
+The distribution of log(beta0 hat * beta1 hat) is approximately normal, with the mean 2.013 and the standard error of 0.024. 
 
 Using the 5000 bootstrap estimates, identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(beta0 hat * beta1 hat):
+
 ```{r}
 tibble(
   quantile = c("2.5 %", "97.5 %"),
@@ -322,6 +338,7 @@ tibble(
 ) %>%
    knitr::kable(digits = 3)
 ```
+
 The 95% confidence interval for r^2 is `r  quantile(bootstrap_results_log$r.squared, c(0.025,0.975))`.
 
-The 95% confidence interval for log(beta0 hat * beta1 hat) is (0.8530, 0.8945).
+The 95% confidence interval for log(beta0 hat * beta1 hat) is `r  quantile(bootstrap_results_log$log_coef_intereaction, c(0.025,0.975))`.
